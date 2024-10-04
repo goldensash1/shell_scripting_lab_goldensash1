@@ -35,9 +35,29 @@ else
     touch "$app_dir/assets/submission.txt"
 fi
 
-# Add 5 additional student records to submission.txt
-for i in {4..8}; do
-    echo "Student$i, Assignment$i, Due: 2024-10-0$i" >> "$app_dir/assets/submission.txt"
+# Ask the user how many records they want to add
+echo "How many student records do you want to add?"
+read num_records
+
+# Loop to input student records from the user
+for (( i=1; i<=$num_records; i++ ))
+do
+    echo "Enter details for student #$i:"
+
+    # Get student name
+    echo "Enter student name:"
+    read student_name
+
+    # Get assignment name
+    echo "Enter assignment name:"
+    read assignment_name
+
+    # Get due date
+    echo "Enter due date (format: YYYY-MM-DD):"
+    read due_date
+
+    # Append the student's information to submission.txt
+    echo "$student_name, $assignment_name, Due: $due_date" >> "$app_dir/assets/submission.txt"
 done
 
 # Make the scripts executable
