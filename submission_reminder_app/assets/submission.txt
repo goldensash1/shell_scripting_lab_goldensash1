@@ -1,8 +1,0 @@
-student, assignment, submission status
-here, Shell Navigation, submitted
-Noel, Shell Navigation, not submitted
-goldensash, Assignment4, Due: 2024-10-04
-Emanuel, Assignment5, Due: 2024-10-05
-Chibueze, Assignment6, Due: 2024-10-06
-Moses, Assignment7, Due: 2024-10-07
-Salomon, Assignment8, Due: 2024-10-08

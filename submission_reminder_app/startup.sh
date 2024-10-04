@@ -1,11 +1,5 @@
 #!/bin/bash
-# Startup
 
-echo "Starting the $APP_NAME (version $VERSION)..."
-
-#Config files
-source ./config/config.env
-source ./modules/functions.sh
+echo "Starting the submission reminder application..."
 
 ./app/reminder.sh
-
