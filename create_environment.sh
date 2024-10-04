@@ -1,69 +1,116 @@
 #!/bin/bash
 
-# Create the main application directory
-app_dir="submission_reminder_app"
-mkdir -p "$app_dir"
+# Create app directories
+mkdir -p submission_reminder_app
+mkdir -p submission_reminder_app/assets
+mkdir -p submission_reminder_app/config
+mkdir -p submission_reminder_app/modules
+mkdir -p submission_reminder_app/app
 
-# Declare an associative array to store directories and files
-declare -A directories=(
-    ["app"]="reminder.sh"
-    ["modules"]="functions.sh"
-    ["assets"]="submission.txt"
-    ["config"]="config.env"
-)
+# Create submissions data
+cat <<EOL > submission_reminder_app/assets/submissions.txt
+student, assignment, submission status
+here, Shell Navigation, submitted
+Noel, Shell Navigation, not submitted
+Goldens, Shell Navigation, submitted
+Ngwoke, Shell Navigation, not submitted
+Uche, Shell Navigation, submitted
+Victor, Shell Navigation, not submitted
+Salomon, Shell Navigation, submitted
+EOL
 
-# Loop through the directories and create them, along with their respective files
-for dir in "${!directories[@]}"; do
-    mkdir -p "$app_dir/$dir"
-    file="${directories[$dir]}"
-    touch "$app_dir/$dir/$file"
+# Configuration file
+cat <<EOL > submission_reminder_app/config/config.env
+ASSIGNMENT="Shell Navigation"
+DAYS_REMAINING=2
+EOL
+
+# Functions file
+cat <<EOL > submission_reminder_app/modules/functions.sh
+#!/bin/bash
+
+function check_submissions {
+    local submissions_file=\$1
+    echo "Checking submissions in \$submissions_file"
+
+    while IFS=, read -r student assignment status; do
+        # Remove leading and trailing whitespace
+        student=\$(echo "\$student" | xargs)
+        assignment=\$(echo "\$assignment" | xargs)
+        status=\$(echo "\$status" | xargs)
+
+        if [[ "\$assignment" == "\$ASSIGNMENT" && "\$status" == "not submitted" ]]; then
+            echo "Reminder: \$student has not submitted the \$ASSIGNMENT assignment!"
+        fi
+    done < <(tail -n +2 "\$submissions_file") # Skip the header
+}
+
+function list_students {
+    local submissions_file=\$1
+    echo "Listing students and their submission status for \$ASSIGNMENT"
+
+    while IFS=, read -r student assignment status; do
+        student=\$(echo "\$student" | xargs)
+        assignment=\$(echo "\$assignment" | xargs)
+        status=\$(echo "\$status" | xargs)
+
+        echo "\$student has \$status the \$ASSIGNMENT assignment."
+    done < <(tail -n +2 "\$submissions_file")
+}
+EOL
+
+# Main reminder script
+cat <<EOL > submission_reminder_app/app/reminder.sh
+#!/bin/bash
+
+source ./config/config.env
+source ./modules/functions.sh
+
+submissions_file="./assets/submissions.txt"
+
+echo "Assignment: \$ASSIGNMENT"
+echo "Days remaining to submit: \$DAYS_REMAINING days"
+echo "--------------------------------------------"
+
+# Loop to allow choosing different operations
+while true; do
+    echo "Choose an option:"
+    echo "1. Check for unsubmitted assignments"
+    echo "2. List all students and their submission status"
+    echo "3. Exit"
+    read -p "Enter your choice: " choice
+
+    case \$choice in
+        1)
+            check_submissions \$submissions_file
+            ;;
+        2)
+            list_students \$submissions_file
+            ;;
+        3)
+            echo "Exiting application."
+            break
+            ;;
+        *)
+            echo "Invalid choice, please try again."
+            ;;
+    esac
 done
+EOL
 
-# Create the startup.sh file outside of the directories listed above
-touch "$app_dir/startup.sh"
+# Startup script
+cat <<EOL > submission_reminder_app/startup.sh
+#!/bin/bash
 
-# Populate the necessary files with initial content
-echo "#!/bin/bash" > "$app_dir/app/reminder.sh"
-echo "#!/bin/bash" > "$app_dir/modules/functions.sh"
-echo "# Configuration File" > "$app_dir/config/config.env"
+echo "Starting the submission reminder application..."
 
-# Populate the submission.txt file with existing data from submissions.txt (assuming submissions.txt is in the same directory)
-if [ -f "submissions.txt" ]; then
-    cat submissions.txt > "$app_dir/assets/submission.txt"
-else
-    echo "submissions.txt not found. Creating an empty submission.txt"
-    touch "$app_dir/assets/submission.txt"
-fi
+./app/reminder.sh
+EOL
 
-# Ask the user how many records they want to add
-echo "How many student records do you want to add?"
-read num_records
+# Make scripts executable
+chmod +x submission_reminder_app/app/reminder.sh
+chmod +x submission_reminder_app/startup.sh
+chmod +x submission_reminder_app/modules/functions.sh
 
-# Loop to input student records from the user
-for (( i=1; i<=$num_records; i++ ))
-do
-    echo "Enter details for student #$i:"
-
-    # Get student name
-    echo "Enter student name:"
-    read student_name
-
-    # Get assignment name
-    echo "Enter assignment name:"
-    read assignment_name
-
-    # Get due date
-    echo "Enter due date (format: YYYY-MM-DD):"
-    read due_date
-
-    # Append the student's information to submission.txt
-    echo "$student_name, $assignment_name, Due: $due_date" >> "$app_dir/assets/submission.txt"
-done
-
-# Make the scripts executable
-for file in "app/reminder.sh" "modules/functions.sh" "startup.sh"; do
-    chmod +x "$app_dir/$file"
-done
-
-echo "Environment setup is complete."
+echo "Environment setup complete!"
 
