@@ -1,1 +1,1 @@
-This is a shell script app that helps students track assignment deadlines. It automates the creation of an application structure, allows user input for student submissions, and provides reminders of upcoming deadlines.
+This is a shell script app that tracks assignment deadlines. It automates the creation of an application structure, allows user input for student submissions, and provides reminders of upcoming deadlines.
